@@ -1,29 +1,29 @@
-# 第 2 层：核心算法库 — 高层架构设计
+# Layer 2: Core AI Model Library — High-Level Architecture
 
-## 1. 层概述
+## 1. Layer Overview
 
-### 1.1 定位
+### 1.1 Role
 
-核心算法库 (Core AI Model Library) 是系统的**算法武器库**，保持**框架中立 (Framework Agnostic)**。模型以 ONNX、PyTorch 等通用格式存储，不含任何硬件绑定代码，可快速重训以适应新场景。
+The Core AI Model Library is the **algorithm arsenal**, **framework-agnostic**. Models stored in ONNX, PyTorch, etc., with no hardware binding, quickly retrainable for new scenarios.
 
-### 1.2 设计原则
+### 1.2 Design Principles
 
-- **格式中立**：优先 ONNX，支持 TFLite、PyTorch 作为训练/导出中间格式
-- **无硬件依赖**：模型文件不包含 SNPE、TensorRT 等厂商特定优化
-- **可追溯**：每个模型附带元数据（训练数据、版本、精度指标）
+- **Format-neutral**: Prefer ONNX, support TFLite, PyTorch as training/export intermediates
+- **No hardware dependency**: No SNPE, TensorRT, etc. in model files
+- **Traceable**: Each model has metadata (training data, version, metrics)
 
 ---
 
-## 2. 架构图
+## 2. Architecture Diagram
 
 ```mermaid
 flowchart TB
-    subgraph ModelRepo [模型仓库]
-        ONNX[ONNX 模型]
-        Meta[模型元数据]
+    subgraph ModelRepo [Model Repository]
+        ONNX[ONNX Models]
+        Meta[Model Metadata]
     end
 
-    subgraph AlgoModules [算法模块]
+    subgraph AlgoModules [Algorithm Modules]
         Detection[detection/]
         Tracking[tracking/]
         OCR[ocr/]
@@ -31,15 +31,15 @@ flowchart TB
         Audio[audio/]
     end
 
-    subgraph DetectionDetail [detection 子模块]
+    subgraph DetectionDetail [detection submodules]
         YOLO[YOLO]
         PaDiM[PaDiM]
         PatchCore[PatchCore]
     end
 
-    subgraph Export [导出接口]
-        ToONNX[导出 ONNX]
-        ToTFLite[导出 TFLite]
+    subgraph Export [Export Interface]
+        ToONNX[Export ONNX]
+        ToTFLite[Export TFLite]
     end
 
     ModelRepo --> AlgoModules
@@ -50,46 +50,46 @@ flowchart TB
 
 ---
 
-## 3. 模块划分
+## 3. Module Breakdown
 
-### 3.1 detection（检测 / 异常检测）
+### 3.1 detection
 
-| 子模块 | 模型 | 格式 | 输入 | 输出 |
-|--------|------|------|------|------|
-| YOLO | YOLOv8/v10 | ONNX | 图像 | bbox, class, confidence |
-| PaDiM | PaDiM | ONNX | 图像 | 异常分数 |
-| PatchCore | PatchCore | ONNX | 图像 | 异常分数 |
+| Submodule | Model | Format | Input | Output |
+|-----------|-------|--------|-------|--------|
+| YOLO | YOLOv8/v10 | ONNX | Image | bbox, class, confidence |
+| PaDiM | PaDiM | ONNX | Image | Anomaly score |
+| PatchCore | PatchCore | ONNX | Image | Anomaly score |
 
-### 3.2 tracking（追踪 / 姿态）
+### 3.2 tracking
 
-| 子模块 | 模型 | 格式 | 输入 | 输出 |
-|--------|------|------|------|------|
-| ByteTrack | ByteTrack | ONNX | 检测框序列 | 轨迹 ID |
-| MoveNet | MoveNet.Thunder | TFLite | 图像 | 人体关键点 |
+| Submodule | Model | Format | Input | Output |
+|-----------|-------|--------|-------|--------|
+| ByteTrack | ByteTrack | ONNX | Detection sequence | Track ID |
+| MoveNet | MoveNet.Thunder | TFLite | Image | Body keypoints |
 
-### 3.3 ocr（文字识别）
+### 3.3 ocr
 
-| 子模块 | 模型 | 格式 | 输入 | 输出 |
-|--------|------|------|------|------|
-| PaddleOCR | PP-OCR | ONNX | 图像 | 文本、框 |
+| Submodule | Model | Format | Input | Output |
+|-----------|-------|--------|-------|--------|
+| PaddleOCR | PP-OCR | ONNX | Image | Text, boxes |
 
-### 3.4 segmentation（分割 / 深度）
+### 3.4 segmentation
 
-| 子模块 | 模型 | 格式 | 输入 | 输出 |
-|--------|------|------|------|------|
-| BiSeNet | BiSeNetV2 | ONNX | 图像 | 语义图 |
-| MiDaS | MiDaS | ONNX | 图像 | 深度图 |
+| Submodule | Model | Format | Input | Output |
+|-----------|-------|--------|-------|--------|
+| BiSeNet | BiSeNetV2 | ONNX | Image | Semantic map |
+| MiDaS | MiDaS | ONNX | Image | Depth map |
 
-### 3.5 audio（音频预测）
+### 3.5 audio
 
-| 子模块 | 模型 | 格式 | 输入 | 输出 |
-|--------|------|------|------|------|
-| 1D-CNN | 自定义 | ONNX | 音频时序 | 异常概率 |
-| CRNN | 自定义 | ONNX | 频谱图 | 异常概率 |
+| Submodule | Model | Format | Input | Output |
+|-----------|-------|--------|-------|--------|
+| 1D-CNN | Custom | ONNX | Audio time series | Anomaly probability |
+| CRNN | Custom | ONNX | Spectrogram | Anomaly probability |
 
 ---
 
-## 4. 模型元数据规范
+## 4. Model Metadata Spec
 
 ```yaml
 model_id: yolov8n_defect_v1
@@ -109,51 +109,51 @@ training:
 
 ---
 
-## 5. 数据流
+## 5. Data Flow
 
 ```mermaid
 flowchart LR
-    Train[训练] --> Export[导出 ONNX]
-    Export --> Repo[模型仓库]
-    Repo --> Quant[量化流水线]
+    Train[Training] --> Export[Export ONNX]
+    Export --> Repo[Model Repo]
+    Repo --> Quant[Quantization Pipeline]
     Quant --> DLC[SNPE DLC]
     Quant --> TRT[TensorRT Engine]
     Quant --> RKNN[RKNN]
     Quant --> Vitis[Vitis AI]
 ```
 
-- **训练阶段**：在 PC/云端完成，输出 ONNX
-- **部署阶段**：量化流水线根据目标硬件生成对应格式，算法库仅提供 ONNX 源
+- **Training**: PC/cloud, output ONNX
+- **Deployment**: Quantization pipeline produces target format; algorithm library provides ONNX source only
 
 ---
 
-## 6. 接口定义
+## 6. Interface Definition
 
-### 6.1 对上层（业务层）
+### 6.1 To upper (business layer)
 
-| 接口 | 说明 |
-|------|------|
-| `list_models()` | 列出可用 model_id |
-| `get_model_meta(model_id)` | 获取模型元数据 |
-| `get_input_spec(model_id)` | 获取输入尺寸、类型 |
+| Interface | Description |
+|-----------|-------------|
+| `list_models()` | List available model_id |
+| `get_model_meta(model_id)` | Get model metadata |
+| `get_input_spec(model_id)` | Get input shape, type |
 
-### 6.2 对下层（HAL）
+### 6.2 To lower (HAL)
 
-算法库**不直接调用 HAL**。HAL 通过 `model_id` 加载已量化的运行时模型。算法库仅负责：
-- 存储 ONNX 源模型
-- 提供元数据查询
-- 与量化流水线对接
+Algorithm library **does not call HAL directly**. HAL loads quantized runtime model by `model_id`. Algorithm library:
+- Stores ONNX source models
+- Provides metadata queries
+- Interfaces with quantization pipeline
 
 ---
 
-## 7. 目录结构
+## 7. Directory Structure
 
 ```
 02_algorithms/
 ├── detection/
-│   ├── yolo/           # YOLO 训练/导出脚本
-│   ├── padim/          # PaDiM
-│   └── patchcore/      # PatchCore
+│   ├── yolo/
+│   ├── padim/
+│   └── patchcore/
 ├── tracking/
 │   ├── bytetrack/
 │   └── movenet/
@@ -165,16 +165,16 @@ flowchart LR
 ├── audio/
 │   ├── cnn1d/
 │   └── crnn/
-└── models/              # 模型仓库（ONNX 存储）
-    └── metadata/        # 元数据 JSON/YAML
+└── models/
+    └── metadata/
 ```
 
 ---
 
-## 8. 技术选型
+## 8. Tech Choices
 
-| 维度 | 选型 | 理由 |
-|------|------|------|
-| 主格式 | ONNX | 跨框架、厂商支持好 |
-| 训练框架 | PyTorch | 生态丰富，导出 ONNX 简单 |
-| 版本管理 | 语义化版本 + Git LFS | 模型文件大，需 LFS |
+| Dimension | Choice | Reason |
+|-----------|--------|--------|
+| Primary format | ONNX | Cross-framework, vendor support |
+| Training framework | PyTorch | Rich ecosystem, easy ONNX export |
+| Versioning | Semver + Git LFS | Large model files |

@@ -1,6 +1,6 @@
-# AMR/AGV 导航场景
+# AMR/AGV Navigation Scene
 
-物流搬运与机器人导航，SLAM 建图与避障。
+Logistics and robot navigation—SLAM mapping and obstacle avoidance.
 
-- **推荐模型**: BiSeNetV2、MiDaS
-- **推荐硬件**: RB5、Jetson、Xilinx K26
+- **Recommended models**: BiSeNetV2, MiDaS
+- **Recommended hardware**: RB5, Jetson, Xilinx K26

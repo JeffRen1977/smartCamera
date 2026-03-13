@@ -1,3 +1,3 @@
-# Intel OpenVINO 适配
+# Intel OpenVINO Adapter
 
-x86、Cloud
+x86, Cloud

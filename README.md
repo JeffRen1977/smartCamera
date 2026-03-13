@@ -1,76 +1,77 @@
-# Smart Camera · 可配置工业相机解决方案
+# Smart Camera · Configurable Industrial Camera Solution
 
-软件定义相机 (Software-Defined Camera) · 工业 4.0 自适应部署平台
+Software-Defined Camera · Industry 4.0 Adaptive Deployment Platform
 
-## 项目结构
+## Project Structure
 
 ```
 smartCamera/
-├── docs/                    # 方案文档
-│   └── 可配置工业相机解决方案.md
+├── docs/                    # Documentation
+│   ├── Configurable_Industrial_Camera_Solution.md  # English
+│   └── 可配置工业相机解决方案.md                   # Chinese
 ├── src/
-│   ├── 01_business/         # 1. 用户业务与应用场景层
+│   ├── 01_business/         # 1. Business & Application Layer
 │   │   ├── defect_detection/
 │   │   ├── ppe_monitoring/
 │   │   ├── predictive_maintenance/
 │   │   └── amr_navigation/
-│   ├── 02_algorithms/       # 2. 核心算法库
+│   ├── 02_algorithms/       # 2. Core AI Model Library
 │   │   ├── detection/
 │   │   ├── tracking/
 │   │   ├── ocr/
 │   │   ├── segmentation/
 │   │   └── audio/
-│   ├── 03_orchestration/     # 3. 算法编排与容器化层
+│   ├── 03_orchestration/    # 3. Orchestration & Containerization
 │   │   ├── docker/
 │   │   ├── k3s/
 │   │   └── quantization/
-│   ├── 04_hal/              # 4. 感知适配层
+│   ├── 04_hal/              # 4. Perception Adapter Layer
 │   │   ├── api/
 │   │   ├── adapters/        # SNPE, TensorRT, OpenVINO, VitisAI, RKNN
 │   │   └── isp/
-│   ├── 05_hardware/         # 5. 异构硬件算力层
+│   ├── 05_hardware/         # 5. Heterogeneous Hardware
 │   │   └── configs/
-│   ├── 06_plc/              # 6. PLC 工业控制层
+│   ├── 06_plc/              # 6. PLC Integration Layer
 │   │   ├── ethernet_ip/
 │   │   ├── modbus_tcp/
 │   │   ├── mqtt/
 │   │   └── opc_ua/
-│   └── 07_cloud/            # 7. 云平台监控与管理
+│   └── 07_cloud/            # 7. Cloud Platform
 │       ├── agent/
 │       ├── backend/
 │       └── dashboard/
 ```
 
-## 架构层级
+## Architecture Layers
 
-| 层级 | 目录 | 说明 |
-|------|------|------|
-| 1 | `01_business` | 业务场景定义，映射到算法 |
-| 2 | `02_algorithms` | 核心算法库，框架中立 |
-| 3 | `03_orchestration` | Docker + K3s + 量化 |
-| 4 | `04_hal` | 统一 API + 厂商适配器 |
-| 5 | `05_hardware` | 硬件配置 |
-| 6 | `06_plc` | EtherNet/IP、Modbus TCP、MQTT、OPC UA |
-| 7 | `07_cloud` | 设备监控、模型 OTA、效果检测 |
+| Layer | Directory | Description |
+|-------|-----------|-------------|
+| 1 | `01_business` | Business scenarios, algorithm mapping |
+| 2 | `02_algorithms` | Core algorithm library, framework-agnostic |
+| 3 | `03_orchestration` | Docker + K3s + quantization |
+| 4 | `04_hal` | Unified API + vendor adapters |
+| 5 | `05_hardware` | Hardware configuration |
+| 6 | `06_plc` | EtherNet/IP, Modbus TCP, MQTT, OPC UA |
+| 7 | `07_cloud` | Device monitoring, model OTA, effect detection |
 
-## 支持硬件
+## Supported Hardware
 
-- Qualcomm: QS610、QS6490、RB5
+- Qualcomm: QS610, QS6490, RB5
 - NVIDIA: Jetson
 - Xilinx: K26 (Kria)
 - Rockchip: RV1126
 - Cloud: x86/GPU
 
-## 架构设计文档
+## Architecture Design Docs
 
-各层详细高层架构设计见 [docs/architecture/](docs/architecture/)：
+Detailed high-level architecture per layer: [docs/architecture/](docs/architecture/)
 
-- [01 业务层](docs/architecture/01_business_layer.md)
-- [02 算法库](docs/architecture/02_algorithms_layer.md)
-- [03 编排层](docs/architecture/03_orchestration_layer.md)
-- [04 感知适配层 (HAL)](docs/architecture/04_hal_layer.md)
-- [05 硬件层](docs/architecture/05_hardware_layer.md)
-- [06 PLC 层](docs/architecture/06_plc_layer.md)
-- [07 云平台](docs/architecture/07_cloud_platform.md)
+- [01 Business Layer](docs/architecture/01_business_layer.md)
+- [02 Algorithms](docs/architecture/02_algorithms_layer.md)
+- [03 Orchestration](docs/architecture/03_orchestration_layer.md)
+- [04 HAL](docs/architecture/04_hal_layer.md)
+- [05 Hardware](docs/architecture/05_hardware_layer.md)
+- [06 PLC](docs/architecture/06_plc_layer.md)
+- [07 Cloud Platform](docs/architecture/07_cloud_platform.md)
 
-详见 [docs/可配置工业相机解决方案.md](docs/可配置工业相机解决方案.md)
+See [docs/Configurable_Industrial_Camera_Solution.md](docs/Configurable_Industrial_Camera_Solution.md)

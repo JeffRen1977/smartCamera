@@ -1,3 +1,3 @@
-# Docker 容器镜像
+# Docker Container Images
 
-算法库 + 依赖环境（OpenCV 等）打包为 Docker 镜像。
+Package algorithm library and dependencies (OpenCV, etc.) as Docker images.

@@ -1,17 +1,17 @@
-# 7. 云平台监控与管理 (Cloud Platform)
+# 7. Cloud Platform Monitoring & Management
 
-边缘设备的管控中枢，实现设备监控、模型自动下发、效果自动检测。
+Control center for edge devices—device monitoring, model OTA, effect detection.
 
-## 模块
+## Modules
 
-| 目录 | 功能 |
-|------|------|
-| `agent/` | 边缘 Agent：心跳、指标采集、OTA 接收 |
-| `backend/` | 云平台后端：API、部署引擎、监控、效果分析 |
-| `dashboard/` | 监控看板：Grafana 等 |
+| Directory | Function |
+|-----------|----------|
+| `agent/` | Edge Agent: heartbeat, metrics, OTA receive |
+| `backend/` | Cloud backend: API, deploy engine, monitoring, effect analysis |
+| `dashboard/` | Monitoring dashboard: Grafana, etc. |
 
-## 核心能力
+## Core Capabilities
 
-- **设备监控**：在线状态、资源占用、推理帧率
-- **模型自动下发**：OTA 推送新模型，支持灰度与回滚
-- **效果自动检测**：置信度分布、延迟、误检/漏检告警
+- **Device monitoring**: Online status, resource usage, inference FPS
+- **Model auto rollout**: OTA push new models, gray release and rollback
+- **Effect auto detection**: Confidence distribution, latency, false/miss alerts

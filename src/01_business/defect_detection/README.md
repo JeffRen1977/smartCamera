@@ -1,6 +1,6 @@
-# 缺陷检测场景 (Defect Detection)
+# Defect Detection Scene
 
-工业质检与缺陷检测，智能工厂最「吸金」的场景。
+Industrial defect detection—high-value smart factory scenario.
 
-- **推荐模型**: YOLOv8-Nano、PaDiM、PatchCore
-- **推荐硬件**: QS610、QS6490、RB5、Xilinx K26、RV1126
+- **Recommended models**: YOLOv8-Nano, PaDiM, PatchCore
+- **Recommended hardware**: QS610, QS6490, RB5, Xilinx K26, RV1126

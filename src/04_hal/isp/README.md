@@ -1,3 +1,3 @@
-# ISP 调优驱动
+# ISP Tuning Drivers
 
-针对不同厂商 ISP，确保北美工厂复杂光影下成像质量一致。
+Vendor-specific ISP tuning for consistent image quality under complex factory lighting.

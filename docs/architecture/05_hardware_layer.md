@@ -1,31 +1,31 @@
-# 第 5 层：异构硬件算力层 — 高层架构设计
+# Layer 5: Heterogeneous Hardware — High-Level Architecture
 
-## 1. 层概述
+## 1. Layer Overview
 
-### 1.1 定位
+### 1.1 Role
 
-异构硬件算力层 (Physical Hardware Layer) 是**最终执行推理的物理设备**。本层不包含业务逻辑，仅提供硬件抽象、BSP 配置、设备树等，供 HAL 适配器与编排层使用。
+The Physical Hardware Layer is the **physical devices that execute inference**. No business logic here—only hardware abstraction, BSP config, device tree for HAL adapters and orchestration.
 
-### 1.2 设计原则
+### 1.2 Design Principles
 
-- **配置驱动**：通过配置文件描述硬件能力，而非硬编码
-- **能力声明**：每个平台声明算力、内存、支持的模型格式
-- **与 HAL 解耦**：硬件层不直接参与推理，由 HAL 适配器驱动
+- **Config-driven**: Describe hardware capability via config, not hardcode
+- **Capability declaration**: Each platform declares compute, memory, supported formats
+- **HAL-decoupled**: Hardware layer does not run inference; HAL adapters drive it
 
 ---
 
-## 2. 架构图
+## 2. Architecture Diagram
 
 ```mermaid
 flowchart TB
-    subgraph HAL [HAL 适配器]
+    subgraph HAL [HAL Adapters]
         SNPE[SNPE]
         TRT[TensorRT]
         RKNN[RKNN]
         VitisAI[Vitis AI]
     end
 
-    subgraph Platforms [硬件平台]
+    subgraph Platforms [Hardware Platforms]
         subgraph Qualcomm [Qualcomm]
             QS610[QS610]
             QS6490[QS6490]
@@ -37,9 +37,9 @@ flowchart TB
         Cloud[Cloud]
     end
 
-    subgraph Config [配置与能力]
-        Capability[能力声明]
-        BSP[BSP / 设备树]
+    subgraph Config [Config & Capability]
+        Capability[Capability Declaration]
+        BSP[BSP / Device Tree]
     end
 
     SNPE --> QS610
@@ -54,21 +54,21 @@ flowchart TB
 
 ---
 
-## 3. 平台能力矩阵
+## 3. Platform Capability Matrix
 
-| 平台 | 算力 | 内存 | 推理引擎 | 多路相机 | 音频 DSP | 典型场景 |
-|------|------|------|----------|----------|----------|----------|
-| QS610 | 低 | 1–2GB | SNPE | 1–2 | 否 | 轻量 Smart Camera |
-| QS6490 | 中高 | 4GB+ | SNPE | 4+ | 否 | 多路工业相机 |
-| RB5 | 中 | 8GB | SNPE | 多路 | 是 | 边缘 AI、预测维护 |
-| Jetson | 高 | 8–32GB | TensorRT | 多路 | 否 | 具身智能、大模型 |
-| K26 | 中高 | 4GB | Vitis AI | 多路 | 否 | 工业级、超低延迟 |
-| RV1126 | 低 | 512MB–1GB | RKNN | 1–2 | 否 | 国产化、低成本 |
-| Cloud | 弹性 | 弹性 | OpenVINO/TRT | N/A | N/A | 再训练、批量推理 |
+| Platform | Compute | Memory | Engine | Multi-cam | Audio DSP | Use Case |
+|----------|---------|--------|--------|-----------|-----------|----------|
+| QS610 | Low | 1–2GB | SNPE | 1–2 | No | Lightweight Smart Camera |
+| QS6490 | Med-High | 4GB+ | SNPE | 4+ | No | Multi-cam industrial |
+| RB5 | Med | 8GB | SNPE | Multi | Yes | Edge AI, predictive |
+| Jetson | High | 8–32GB | TensorRT | Multi | No | Embodied AI, LLM |
+| K26 | Med-High | 4GB | Vitis AI | Multi | No | Industrial, ultra-low latency |
+| RV1126 | Low | 512MB–1GB | RKNN | 1–2 | No | Cost-sensitive |
+| Cloud | Elastic | Elastic | OpenVINO/TRT | N/A | N/A | Retraining, batch |
 
 ---
 
-## 4. 能力声明格式
+## 4. Capability Declaration Format
 
 ```yaml
 # configs/rb5.yaml
@@ -89,7 +89,7 @@ capabilities:
 
 ---
 
-## 5. 目录结构
+## 5. Directory Structure
 
 ```
 05_hardware/
@@ -100,7 +100,7 @@ capabilities:
 │   ├── jetson.yaml
 │   ├── k26.yaml
 │   └── rv1126.yaml
-├── bsp/                  # 可选：BSP 补丁、设备树
+├── bsp/
 │   ├── qualcomm/
 │   ├── rockchip/
 │   └── xilinx/
@@ -109,16 +109,16 @@ capabilities:
 
 ---
 
-## 6. 与编排层协作
+## 6. Collaboration with Orchestration
 
-- 编排层根据 `nodeSelector` 或节点标签选择硬件
-- 部署时挂载对应平台的 `configs/*.yaml`
-- HAL 通过 `HAL_BACKEND` 或平台检测加载对应适配器
+- Orchestration selects hardware via `nodeSelector` or node labels
+- Mount platform `configs/*.yaml` at deploy time
+- HAL loads adapter via `HAL_BACKEND` or platform detection
 
 ---
 
-## 7. 实现要点
+## 7. Implementation Notes
 
-1. **能力查询 API**：运行时可查询当前平台能力，用于业务层选型
-2. **热插拔**：支持 USB 相机等热插拔，设备变更时通知上层
-3. **功耗与温度**：工业场景需考虑散热，能力声明中可包含功耗/温度限制
+1. **Capability query API**: Runtime query for business layer selection
+2. **Hot-plug**: USB camera etc., notify upper on change
+3. **Power/temp**: Industrial thermal constraints in capability declaration

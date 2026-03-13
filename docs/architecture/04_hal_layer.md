@@ -1,32 +1,32 @@
-# 第 4 层：感知适配层 (HAL) — 高层架构设计
+# Layer 4: Perception Adapter Layer (HAL) — High-Level Architecture
 
-## 1. 层概述
+## 1. Layer Overview
 
-### 1.1 定位
+### 1.1 Role
 
-感知适配层 (Perception Adapter Layer / HAL) 是整个系统实现**算法与硬件解耦**的核心。对上提供统一感知 API，对下通过厂商 SDK 适配器映射到具体硬件。算法容器只需调用统一接口，无需关心底层是 SNPE、TensorRT 还是 RKNN。
+The Perception Adapter Layer (HAL) is the core of **algorithm-hardware decoupling**. It provides a unified perception API upward and maps to specific hardware via vendor SDK adapters. Algorithm containers call one interface regardless of SNPE, TensorRT, or RKNN underneath.
 
-### 1.2 设计原则
+### 1.2 Design Principles
 
-- **统一 API**：图像输入、推理、I/O 接口一致
-- **运行时选型**：根据环境变量或设备检测自动选择适配器
-- **可扩展**：新增硬件平台仅需实现适配器接口
+- **Unified API**: Same interfaces for image input, inference, I/O
+- **Runtime selection**: Auto-select adapter via env var or device detection
+- **Extensible**: New hardware = implement adapter interface
 
 ---
 
-## 2. 架构图
+## 2. Architecture Diagram
 
 ```mermaid
 flowchart TB
-    subgraph Upper [上层：算法容器]
-        App[业务逻辑]
+    subgraph Upper [Upper: Algorithm Container]
+        App[Business Logic]
         InferCall[infer(image, model_id)]
     end
 
-    subgraph HAL [感知适配层]
-        API[统一感知 API]
-        Router[适配器路由器]
-        subgraph Adapters [厂商适配器]
+    subgraph HAL [Perception Adapter Layer]
+        API[Unified Perception API]
+        Router[Adapter Router]
+        subgraph Adapters [Vendor Adapters]
             SNPE[SNPE Adapter]
             TRT[TensorRT Adapter]
             OpenVINO[OpenVINO Adapter]
@@ -35,7 +35,7 @@ flowchart TB
         end
     end
 
-    subgraph Lower [下层：硬件]
+    subgraph Lower [Lower: Hardware]
         QCS[Qualcomm]
         Jetson[NVIDIA Jetson]
         x86[Intel x86]
@@ -60,52 +60,52 @@ flowchart TB
 
 ---
 
-## 3. 核心组件
+## 3. Core Components
 
-### 3.1 统一感知 API
+### 3.1 Unified Perception API
 
-| 接口 | 签名 | 说明 |
-|------|------|------|
-| `init(backend?)` | 初始化，可选指定 backend | 不指定则自动检测 |
-| `infer(image, model_id)` | 同步推理 | 返回检测框、类别、置信度等 |
-| `infer_async(image, model_id, callback)` | 异步推理 | 适合高吞吐 |
-| `get_image_source(stream_id)` | 获取图像源 | 相机/视频流 |
-| `set_io(pin, value)` | GPIO 等 I/O | 可选，用于简单触发 |
+| Interface | Signature | Description |
+|-----------|-----------|-------------|
+| `init(backend?)` | Init, optional backend | Auto-detect if not specified |
+| `infer(image, model_id)` | Sync inference | Returns detections, class, confidence |
+| `infer_async(image, model_id, callback)` | Async inference | For high throughput |
+| `get_image_source(stream_id)` | Get image source | Camera/video stream |
+| `set_io(pin, value)` | GPIO I/O | Optional, simple triggers |
 
-**数据格式**：
+**Data format**:
 
-- 输入：`numpy.ndarray` (H, W, C) 或 `bytes`（裸数据）
-- 输出：统一结构，如 `{detections: [...], metadata: {...}}`
+- Input: `numpy.ndarray` (H, W, C) or `bytes`
+- Output: Unified structure, e.g. `{detections: [...], metadata: {...}}`
 
-### 3.2 适配器路由器 (Adapter Router)
+### 3.2 Adapter Router
 
-| 逻辑 | 说明 |
-|------|------|
-| 环境变量 | `HAL_BACKEND=snpe|tensorrt|openvino|vitis_ai|rknn` |
-| 自动检测 | 读取 `/proc/device-tree`、CPU 信息等判断平台 |
-| 回退 | 指定 backend 不可用时，尝试其他 |
+| Logic | Description |
+|-------|-------------|
+| Env var | `HAL_BACKEND=snpe|tensorrt|openvino|vitis_ai|rknn` |
+| Auto-detect | Read `/proc/device-tree`, CPU info to determine platform |
+| Fallback | Try others if specified backend unavailable |
 
-### 3.3 厂商适配器
+### 3.3 Vendor Adapters
 
-| 适配器 | 目标硬件 | 模型格式 | 关键 API |
-|--------|----------|----------|----------|
-| SNPE | QS610、QS6490、RB5 | DLC | SNPE Runtime C API |
+| Adapter | Target | Model Format | Key API |
+|---------|--------|--------------|---------|
+| SNPE | QS610, QS6490, RB5 | DLC | SNPE Runtime C API |
 | TensorRT | Jetson | Engine | TensorRT C++/Python API |
-| OpenVINO | x86、Cloud | IR | openvino.runtime |
+| OpenVINO | x86, Cloud | IR | openvino.runtime |
 | Vitis AI | K26 | Xmodel | pyxir / VART |
 | RKNN | RV1126 | RKNN | rknn-toolkit2 Runtime |
 
-### 3.4 ISP 调优模块
+### 3.4 ISP Tuning Module
 
-| 功能 | 说明 |
-|------|------|
-| 3A 调优 | 自动曝光、自动白平衡、自动对焦 |
-| HDR | 高动态范围，适应仓库内外光影变化 |
-| 厂商 ISP 驱动 | 针对 Qualcomm、Rockchip 等 ISP 的调优参数 |
+| Function | Description |
+|----------|-------------|
+| 3A tuning | Auto exposure, AWB, AF |
+| HDR | High dynamic range for indoor/outdoor |
+| Vendor ISP drivers | Tuning params for Qualcomm, Rockchip, etc. |
 
 ---
 
-## 4. 数据流
+## 4. Data Flow
 
 ```mermaid
 sequenceDiagram
@@ -116,30 +116,30 @@ sequenceDiagram
     participant HW
 
     App->>API: infer(img, "yolov8n_defect")
-    API->>Router: 获取 backend
-    Router->>Adapter: 选择 SNPE
-    Adapter->>Adapter: 加载 DLC
-    Adapter->>HW: 推理
-    HW->>Adapter: 结果
-    Adapter->>API: 统一格式
+    API->>Router: Get backend
+    Router->>Adapter: Select SNPE
+    Adapter->>Adapter: Load DLC
+    Adapter->>HW: Inference
+    HW->>Adapter: Result
+    Adapter->>API: Unified format
     API->>App: detections
 ```
 
 ---
 
-## 5. 接口定义（C++ / Python 双语言）
+## 5. Interface Definition (C++ / Python)
 
-### 5.1 Python 接口
+### 5.1 Python
 
 ```python
 from hal import PerceptionAPI
 
-api = PerceptionAPI(backend="snpe")  # 或 None 自动检测
+api = PerceptionAPI(backend="snpe")  # or None for auto-detect
 result = api.infer(image, model_id="yolov8n_defect")
 # result: {"detections": [...], "inference_time_ms": 12}
 ```
 
-### 5.2 C++ 接口
+### 5.2 C++
 
 ```cpp
 #include "hal/perception_api.h"
@@ -148,7 +148,7 @@ auto api = PerceptionAPI::Create(/*backend*/);
 auto result = api->Infer(image, "yolov8n_defect");
 ```
 
-### 5.3 适配器实现接口（内部）
+### 5.3 Adapter Interface (internal)
 
 ```python
 class BaseAdapter(ABC):
@@ -164,17 +164,17 @@ class BaseAdapter(ABC):
 
 ---
 
-## 6. 目录结构
+## 6. Directory Structure
 
 ```
 04_hal/
 ├── api/
-│   ├── perception_api.py      # Python 统一 API
-│   ├── perception_api.h       # C++ 头文件
-│   └── types.py               # 通用类型定义
+│   ├── perception_api.py
+│   ├── perception_api.h
+│   └── types.py
 ├── adapters/
-│   ├── base.py                # BaseAdapter 抽象
-│   ├── router.py              # 适配器路由
+│   ├── base.py
+│   ├── router.py
 │   ├── snpe/
 │   ├── tensorrt/
 │   ├── openvino/
@@ -188,19 +188,19 @@ class BaseAdapter(ABC):
 
 ---
 
-## 7. 技术选型
+## 7. Tech Choices
 
-| 维度 | 选型 | 理由 |
-|------|------|------|
-| 主语言 | Python + C++ | Python 易集成，C++ 用于嵌入式/性能敏感 |
-| 模型加载 | 懒加载 | 按需加载，节省内存 |
-| 线程模型 | 单线程推理 / 队列 | 避免多线程竞争，保证确定性 |
+| Dimension | Choice | Reason |
+|-----------|--------|--------|
+| Languages | Python + C++ | Python for integration, C++ for embedded/performance |
+| Model loading | Lazy | On-demand, save memory |
+| Threading | Single-thread / queue | Avoid race, deterministic |
 
 ---
 
-## 8. 实现要点
+## 8. Implementation Notes
 
-1. **模型路径解析**：`model_id` → 实际路径（由编排层挂载或配置）
-2. **输入预处理**：归一化、resize 等在 API 层统一，适配器只做推理
-3. **输出后处理**：NMS、解码等在 API 层统一，适配器输出原始 tensor
-4. **错误处理**：适配器异常时返回明确错误码，便于排查
+1. **Model path resolution**: `model_id` → actual path (mounted or configured by orchestration)
+2. **Input preprocessing**: Normalize, resize in API layer; adapter does inference only
+3. **Output postprocessing**: NMS, decode in API layer; adapter outputs raw tensor
+4. **Error handling**: Adapter returns clear error codes for debugging

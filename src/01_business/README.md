@@ -1,16 +1,16 @@
-# 1. 用户业务与应用场景层 (Business Layer)
+# 1. Business & Application Layer
 
-定义客户需求，将业务场景转化为对特定 AI 模型的调用请求。
+Defines customer needs and maps business scenarios to AI model calls.
 
-## 场景模块
+## Scene Modules
 
-| 目录 | 场景 | 典型需求 |
-|------|------|----------|
-| `defect_detection/` | 工业质检与缺陷检测 | 毫秒级剔除、表面划痕/裂纹检测 |
-| `ppe_monitoring/` | 安全生产与 PPE 监测 | 安全帽、反光背心、禁区入侵 |
-| `predictive_maintenance/` | 预测性维护 | 音频+视觉、轴承/设备异常预测 |
-| `amr_navigation/` | 物流 AMR/AGV 导航 | SLAM、避障、语义分割、深度估计 |
+| Directory | Scene | Typical Needs |
+|-----------|-------|---------------|
+| `defect_detection/` | Industrial defect detection | Millisecond reject, surface scratch/crack detection |
+| `ppe_monitoring/` | Safety & PPE monitoring | Hard hat, safety vest, restricted zone |
+| `predictive_maintenance/` | Predictive maintenance | Audio+vision, bearing/equipment anomaly |
+| `amr_navigation/` | AMR/AGV navigation | SLAM, obstacle avoidance, semantic segmentation, depth |
 
-## 自适应逻辑
+## Adaptive Logic
 
-客户不关心硬件品牌，只关心「能否检测安全帽/工件/缺陷」。本层将需求映射到算法库中的模型。
+Customers don't care about hardware brand—only "can it detect hard hat/parts/defects." This layer maps needs to algorithm library models.

@@ -1,11 +1,11 @@
-# 3. 算法编排与容器化层 (Orchestration Layer)
+# 3. Orchestration & Containerization Layer
 
-实现快速布置的关键。Docker 容器打包算法与依赖，K3s 负责编排，量化工具针对目标硬件生成优化模型。
+Key to fast deployment. Docker packages algorithms and dependencies, K3s orchestrates, quantization produces hardware-optimized models.
 
-## 模块
+## Modules
 
-| 目录 | 功能 |
-|------|------|
-| `docker/` | Dockerfile、镜像构建脚本 |
-| `k3s/` | K3s 编排配置、部署清单 |
-| `quantization/` | ONNX → SNPE DLC / TensorRT Engine / Vitis AI / RKNN 的量化流水线 |
+| Directory | Function |
+|-----------|----------|
+| `docker/` | Dockerfile, image build scripts |
+| `k3s/` | K3s config, deployment manifests |
+| `quantization/` | ONNX → SNPE DLC / TensorRT Engine / Vitis AI / RKNN pipeline |

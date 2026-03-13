@@ -1,17 +1,17 @@
-# 2. 核心算法库 (Core AI Model Library)
+# 2. Core AI Model Library
 
-算法武器库，保持框架中立 (Framework Agnostic)。模型为 ONNX 等通用格式，不含硬件绑定代码。
+Algorithm arsenal, framework-agnostic. Models in ONNX etc., no hardware binding.
 
-## 模块
+## Modules
 
-| 目录 | 算法类型 | 典型模型 |
-|------|----------|----------|
-| `detection/` | 目标检测 / 异常检测 | YOLO、PaDiM、PatchCore |
-| `tracking/` | 追踪 / 姿态估计 | ByteTrack、MoveNet |
-| `ocr/` | 文字识别 | PaddleOCR |
-| `segmentation/` | 语义分割 / 深度估计 | BiSeNetV2、MiDaS |
-| `audio/` | 音频预测 | 1D-CNN、CRNN |
+| Directory | Algorithm Type | Typical Models |
+|-----------|----------------|----------------|
+| `detection/` | Object / anomaly detection | YOLO, PaDiM, PatchCore |
+| `tracking/` | Tracking / pose | ByteTrack, MoveNet |
+| `ocr/` | Text recognition | PaddleOCR |
+| `segmentation/` | Semantic segmentation / depth | BiSeNetV2, MiDaS |
+| `audio/` | Audio prediction | 1D-CNN, CRNN |
 
-## 自适应逻辑
+## Adaptive Logic
 
-模型为纯数学逻辑，可快速重训以适应新场景（如从安全帽检测改为纸箱缺陷检测）。
+Models are pure math, quickly retrainable for new scenarios (e.g., hard hat → carton defect).

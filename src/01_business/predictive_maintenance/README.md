@@ -1,6 +1,6 @@
-# 预测性维护场景 (Predictive Maintenance)
+# Predictive Maintenance Scene
 
-音频+视觉融合，预测轴承/设备异常。
+Audio+vision fusion for bearing/equipment anomaly prediction.
 
-- **推荐模型**: 1D-CNN、CRNN
-- **推荐硬件**: RB5（DSP 优势）、Jetson
+- **Recommended models**: 1D-CNN, CRNN
+- **Recommended hardware**: RB5 (DSP), Jetson

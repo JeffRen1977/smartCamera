@@ -1,3 +1,3 @@
-# K3s / WASM 輕量化編排
+# K3s / WASM Lightweight Orchestration
 
-根据硬件算力和网络状况，决定容器跑在相机内、边缘网关内或云端。
+Decide whether containers run in-camera, at edge gateway, or in cloud based on compute and network.

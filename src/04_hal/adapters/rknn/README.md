@@ -1,3 +1,3 @@
-# Rockchip RKNN 适配
+# Rockchip RKNN Adapter
 
 RV1126

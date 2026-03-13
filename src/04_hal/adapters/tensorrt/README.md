@@ -1,3 +1,3 @@
-# NVIDIA TensorRT 适配
+# NVIDIA TensorRT Adapter
 
 Jetson Orin / Xavier

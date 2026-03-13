@@ -1,3 +1,3 @@
-# 硬件配置文件
+# Hardware Configuration Files
 
-各平台 BSP、设备树、启动参数等配置模板。
+BSP, device tree, boot params templates per platform.

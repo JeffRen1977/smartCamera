@@ -1,3 +1,3 @@
-# Qualcomm SNPE 适配
+# Qualcomm SNPE Adapter
 
-QS610、QS6490、RB5
+QS610, QS6490, RB5

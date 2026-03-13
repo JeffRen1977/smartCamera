@@ -1,11 +1,11 @@
-# 5. 异构硬件算力层 (Hardware Layer)
+# 5. Heterogeneous Hardware Layer
 
-物理设备配置与驱动描述。实际推理由 HAL 适配器驱动。
+Physical device config and driver description. Inference driven by HAL adapters.
 
-## 支持平台
+## Supported Platforms
 
-| 平台 | 适配器 |
-|------|--------|
+| Platform | Adapter |
+|----------|---------|
 | Qualcomm QS610 / QS6490 / RB5 | SNPE |
 | NVIDIA Jetson | TensorRT |
 | Xilinx K26 | Vitis AI |
