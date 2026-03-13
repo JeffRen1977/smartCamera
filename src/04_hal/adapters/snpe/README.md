@@ -1,0 +1,3 @@
+# Qualcomm SNPE 适配
+
+QS610、QS6490、RB5
