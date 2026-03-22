@@ -11,10 +11,10 @@ smartCamera/
 │   └── 可配置工业相机解决方案.md                   # Chinese
 ├── src/
 │   ├── 01_business/         # 1. Business & Application Layer
-│   │   ├── defect_detection/
-│   │   ├── ppe_monitoring/
-│   │   ├── predictive_maintenance/
-│   │   └── amr_navigation/
+│   │   ├── assembly_guidance/
+│   │   ├── quality_assurance/
+│   │   ├── safety_compliance/
+│   │   └── logistics_automation/
 │   ├── 02_algorithms/       # 2. Core AI Model Library
 │   │   ├── detection/
 │   │   ├── tracking/

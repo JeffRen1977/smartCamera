@@ -24,10 +24,10 @@ flowchart TB
     end
 
     subgraph SceneRouter [Scene Router]
-        Defect[Defect Detection]
-        PPE[PPE Monitoring]
-        Predict[Predictive Maintenance]
-        AMR[AMR Navigation]
+        Assembly[Assembly Guidance]
+        Quality[Quality Assurance]
+        Safety[Safety Compliance]
+        Logistics[Logistics Automation]
     end
 
     subgraph AlgoSelector [Algorithm Selector]
@@ -42,14 +42,14 @@ flowchart TB
 
     Config --> SceneRouter
     UserReq --> SceneRouter
-    SceneRouter --> Defect
-    SceneRouter --> PPE
-    SceneRouter --> Predict
-    SceneRouter --> AMR
-    Defect --> AlgoSelector
-    PPE --> AlgoSelector
-    Predict --> AlgoSelector
-    AMR --> AlgoSelector
+    SceneRouter --> Assembly[Assembly Guidance]
+    SceneRouter --> Quality[Quality Assurance]
+    SceneRouter --> Safety[Safety Compliance]
+    SceneRouter --> Logistics[Logistics Automation]
+    Assembly --> AlgoSelector
+    Quality --> AlgoSelector
+    Safety --> AlgoSelector
+    Logistics --> AlgoSelector
     AlgoSelector --> InferReq
     AlgoSelector --> PLCReq
 ```
@@ -85,10 +85,10 @@ scene:
 
 | Scene Type | Directory | Algorithm Mapping | Typical Output |
 |------------|-----------|-------------------|----------------|
-| `defect_detection` | 01_business/defect_detection | YOLO / PaDiM / PatchCore | bbox, class, confidence |
-| `ppe_monitoring` | 01_business/ppe_monitoring | MoveNet, YOLO | keypoints, hard hat/vest detection |
-| `predictive_maintenance` | 01_business/predictive_maintenance | 1D-CNN, CRNN | anomaly probability, RUL |
-| `amr_navigation` | 01_business/amr_navigation | BiSeNet, MiDaS | semantic map, depth map |
+| `assembly_guidance` | 01_business/assembly_guidance | Pose, YOLO, sequence models | step verification, SOP prompt |
+| `quality_assurance` | 01_business/quality_assurance | YOLO, PaDiM, PaddleOCR, 3D | defect, label, dimension |
+| `safety_compliance` | 01_business/safety_compliance | MoveNet, YOLO | PPE, zone intrusion, behavior risk |
+| `logistics_automation` | 01_business/logistics_automation | BiSeNet, MiDaS, YOLO | bottleneck, sorting, AMR nav |
 
 ### 3.3 Algorithm Selector
 

@@ -28,7 +28,7 @@ Through **Perception Adapter Layer** and **Algorithm Containerization**:
 
 ### Target Markets
 
-- North American SMB factories (defect detection, PPE safety, predictive maintenance, AMR/AGV navigation)
+- North American SMB factories (assembly guidance, quality assurance, safety compliance, logistics automation)
 - Embodied AI and robotic grasping
 - Cross-factory long-term data analysis
 
@@ -61,10 +61,10 @@ Layered design with **Perception Adapter Layer** and **Orchestration Layer** at 
 ```mermaid
 flowchart TD
     subgraph AppLayer [1. Business & Application Layer]
-        SceneA[Defect Detection]
-        SceneB[PPE Monitoring]
-        SceneC[Predictive Maintenance]
-        SceneD[AMR Navigation]
+        SceneA[Assembly Guidance]
+        SceneB[Quality Assurance]
+        SceneC[Safety Compliance]
+        SceneD[Logistics Automation]
     end
 
     subgraph AlgoLib [2. Core AI Model Library]
@@ -204,76 +204,70 @@ flowchart TD
 
 ## 4. Smart Factory Scenarios & AI Models
 
-### 4.1 Defect Detection
+### 4.1 Human-Augmented Assembly (手動組裝指引與錯誤預防)
 
-**Value**: High-value scenario. Real-time scanning of parts on conveyor, surface scratches/cracks/assembly defects, millisecond-level rejection.
+**Value**: Reduce quality issues from human error. In-process verification, visual SOP, digital traveler for traceability.
 
-| Model Type | Recommended | Format | Notes |
-|------------|-------------|--------|-------|
-| Object detection | YOLOv8/v10 (Tiny/Nano) | TFLite/DLC | Fast on RB5, rich pretrained weights |
-| Object detection | MobileNet-SSD | DLC | Lightweight, low power |
-| Anomaly (unsupervised) | PaDiM / PatchCore | ONNX | Train on "good" only, detect "bad" |
-
-**RB5 advantage**: `qtimltflite` + DSP for millisecond rejection.
-
-**Hardware**: QS610, QS6490, RB5, Xilinx K26, RV1126.
-
-### 4.2 Safety & PPE Monitoring
-
-**Value**: Monitor hard hat, safety vest, restricted zones; detect falls or violations.
-
-| Model Type | Recommended | Format |
-|------------|-------------|--------|
-| Pose estimation | MoveNet / MoveNet.Thunder | TFLite |
-| Object detection | YOLO (PPE), SSD-MobileNet | DLC |
-
-**RB5 advantage**: Multi-camera input (`qtiqmmfsrc`), one RB5 for multiple workstations.
-
-**Hardware**: QS6490, RB5.
-
-### 4.3 Predictive Maintenance
-
-**Value**: Microphone on motor sound, predict bearing failure; vision for equipment anomaly.
-
-| Model Type | Recommended |
+| Capability | Description |
 |------------|-------------|
-| 1D-CNN | Audio time series |
-| CRNN | Spectrum + temporal |
+| In-process verification | Real-time monitoring of assembly actions (e.g., missing washer, torque sequence) |
+| Visual SOP | On-screen prompts or voice alerts on error; closed-loop correction, less rework |
+| Digital traveler | Auto-capture photos linked to serial number; 100% image traceability for aerospace/medical |
 
-**RB5 advantage**: Strong DSP for audio feature extraction.
+**Models**: Pose/keypoint, object detection, sequence recognition. **Hardware**: QS6490, RB5, Jetson, K26.
 
-**Hardware**: RB5, Jetson.
+### 4.2 Quality Assurance & Zero-Defect (高精度質量保證)
 
-### 4.4 AMR/AGV Navigation
+**Value**: AI replaces human inspection for finer, faster quality checks.
 
-**Value**: Edge as robot "brain" for SLAM and obstacle avoidance.
-
-| Model Type | Recommended |
+| Capability | Description |
 |------------|-------------|
-| Semantic segmentation | BiSeNetV2, MobileNetV3-Seg |
-| Depth estimation | MiDaS |
+| Micro-defect detection | PCB solder defects, micro-cracks, part orientation, wrong-part assembly |
+| OCR/OCV | Auto-read labels, wire encoding, batch numbers; verify placement and content |
+| 3D dimension measurement | With ToF; shape deviation, stack height; assembly precision |
 
-**RB5 advantage**: ISP handles large HDR changes (indoor to warehouse door).
+**Models**: YOLO, PaDiM, PatchCore, PaddleOCR. **Hardware**: QS610, QS6490, RB5, Xilinx K26.
 
-**Hardware**: RB5, Jetson, Xilinx K26.
+### 4.3 Safety & Compliance (安全與合規性監控)
+
+**Value**: AI camera as round-the-clock safety manager.
+
+| Capability | Description |
+|------------|-------------|
+| PPE detection | Hard hat, safety vest, mask before entering |
+| Virtual fence | No-go zones (robot range, high-voltage); alarm or PLC stop on intrusion |
+| Behavior risk analysis | Unsafe actions (climbing, fall), prolonged stay in narrow corridor |
+
+**Models**: MoveNet, SSD-MobileNet, YOLO. **Hardware**: QS6490, RB5.
+
+### 4.4 Logistics & Throughput (生態位優化與物流自動化)
+
+**Value**: Improve material flow and throughput.
+
+| Capability | Description |
+|------------|-------------|
+| Bottleneck analysis | Heatmap, cycle time; identify dwell points; optimize shifts |
+| Auto sorting | Identify material type, barcode; signal sorting robot for stacking/boxing |
+| AMR/AGV navigation | Obstacle avoidance, environment perception; human-machine mixed env |
+
+**Models**: BiSeNetV2, MiDaS, YOLO, ByteTrack. **Hardware**: RB5, Jetson, Xilinx K26.
 
 ### 4.5 Scenario & Hardware Overview
 
 | Scenario | Needs | Hardware | Algorithms |
 |----------|-------|----------|------------|
-| Defect detection | Millisecond reject, surface defects | QS610/QS6490/RB5/K26/RV1126 | YOLOv8-Nano, PaDiM, PatchCore |
-| PPE monitoring | Multi-station, low power | QS6490, RB5 | MoveNet, SSD-MobileNet, YOLO |
-| Predictive maintenance | Audio+vision, DSP | RB5, Jetson | 1D-CNN, CRNN |
-| AMR/AGV navigation | HDR, SLAM, avoidance | RB5, Jetson, K26 | BiSeNetV2, MiDaS |
-| Embodied grasping | Multimodal, LLM | Jetson + cloud | Offline VLM + detection |
+| Assembly guidance | In-process verification, SOP, traceability | QS6490, RB5, Jetson, K26 | Pose, YOLO, sequence |
+| Quality assurance | Defect, OCR, 3D measurement | QS610/QS6490/RB5/K26 | YOLO, PaDiM, PaddleOCR |
+| Safety compliance | PPE, virtual fence, behavior | QS6490, RB5 | MoveNet, SSD-MobileNet, YOLO |
+| Logistics automation | Bottleneck, sorting, AMR nav | RB5, Jetson, K26 | BiSeNetV2, MiDaS, YOLO |
 | Cross-factory analytics | Long-term, large-scale | Cloud | Retraining + batch inference |
 
 ### 4.6 Demo Model Priority
 
 | Priority | Scenario | Model | Format | Reason |
 |----------|----------|-------|--------|--------|
-| **P0** | Part counting / defect detection | YOLOv8-Nano | TFLite | Fastest deploy, clear visuals, rich pretrained weights |
-| **P1** | Hard hat monitoring | SSD-MobileNet | DLC | Stable, good RB5 low-power throughput demo |
+| **P0** | Quality assurance / defect detection | YOLOv8-Nano | TFLite | Fastest deploy, clear visuals, rich pretrained weights |
+| **P1** | Safety compliance / PPE monitoring | SSD-MobileNet | DLC | Stable, good RB5 low-power throughput demo |
 
 ---
 
@@ -374,17 +368,39 @@ Cloud is the **control center** for edge devices: monitoring, model OTA, effect 
 
 ## 7. Technical Execution Checklist
 
-| Priority | Task |
-|----------|------|
-| P0 | Define unified perception API (e.g., `infer(image_raw, model_id)`) |
-| P0 | Build multi-platform adapter prototype (RB5, QS610/6490, Jetson, K26, RV1126) |
-| P1 | Model optimization pipeline (ONNX → SNPE/TRT/Vitis/RKNN) |
-| P1 | ISP tuning for vendor cameras |
-| P1 | PLC protocol stack (OpENer / libmodbus) |
-| P1 | Cloud device monitoring |
-| P2 | Model auto rollout |
-| P2 | Effect auto detection |
-| P2 | Memory Map / EDS files |
+To land the architecture, the engineering team should prioritize the following:
+
+### 7.1 P0: Define Unified Perception API
+
+Define the **standard interface** between AI containers and the underlying runtime, e.g. `infer(image_raw, model_id)`. Containers call this interface only; they do not care whether the backend is SNPE or TensorRT. Cover: image input, inference trigger, result format, I/O control.
+
+### 7.2 P0: Build SNPE and TensorRT Adapter Prototypes
+
+- **Hardware**: Purchase one Qualcomm RB5 and one NVIDIA Jetson
+- **Goal**: Run the same reference model (e.g. YOLOv8n) via the unified API on both boards
+- **Purpose**: Prove "develop once, deploy everywhere" before expanding to more platforms
+
+### 7.3 P1: Develop Model Optimization Automation (Quantization Pipeline)
+
+- **Input**: ONNX model
+- **Output**: SNPE INT8 DLC, TensorRT Engine
+- **Tool**: PC-side pipeline (scripts or CLI)
+- **Next**: Package outputs into Docker images for edge deployment
+
+### 7.4 Full Checklist
+
+| Priority | Task | Description |
+|----------|------|-------------|
+| P0 | Define unified perception API | Standard interface, e.g. `infer(image_raw, model_id)` |
+| P0 | Build SNPE / TensorRT adapters | RB5 + Jetson, same YOLOv8n via API on both |
+| P1 | Model optimization pipeline | ONNX → SNPE DLC / TensorRT Engine, package into Docker |
+| P1 | ISP tuning | Consistent image quality across vendor cameras |
+| P1 | PLC protocol stack | OpENer / libmodbus for AI result → PLC registers |
+| P1 | Cloud device monitoring | Edge Agent heartbeat and metrics to cloud dashboard |
+| P2 | Model auto rollout | Cloud registry + deploy engine, OTA to edge |
+| P2 | Extend to more adapters | After SNPE/TRT validation, add Xilinx K26 (Vitis AI), Rockchip RV1126 (RKNN) |
+| P2 | Effect auto detection | Confidence, latency metrics; alert and rollback on anomaly |
+| P2 | Memory Map / EDS files | Modbus register map, Allen-Bradley EDS for drag-and-drop |
 
 ---
 
