@@ -1,0 +1,18 @@
+# Model weights and artifacts (large binaries)
+*.pt
+*.onnx
+*.engine
+*.dlc
+*.rknn
+
+# Test images
+*.jpg
+*.jpeg
+*.png
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.eggs/
+*.egg-info/

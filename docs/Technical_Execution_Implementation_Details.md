@@ -4,6 +4,36 @@
 
 ---
 
+## 0. Dev Environment & Execution Order (Mac First, Ubuntu Later)
+
+If developing on **macOS**, you can complete model development and quantization pipeline scaffolding now, and run SNPE quantization and edge deployment when **Ubuntu 20.04** or RB5 hardware is available.
+
+### 0.1 Phased Execution
+
+| Phase | Environment | Tasks | Notes |
+|-------|-------------|-------|-------|
+| **Model dev** | Mac | Train, export ONNX | Ultralytics, PyTorch work on Mac |
+| **API & integration** | Mac | HAL, mock adapter | Use `backend="mock"` to verify flow |
+| **Quant pipeline framework** | Mac | CLI, validation, TensorRT scripts | Build structure first |
+| **SNPE quantization** | Ubuntu / Docker | ONNX → DLC | SNPE SDK Linux/Windows only |
+| **Edge inference** | Ubuntu + RB5/Jetson | Real hardware validation | Install SDK and deploy DLC/Engine |
+
+### 0.2 Immediate Work on Mac
+
+1. **Model**: Train or export YOLOv8n to ONNX on Mac
+2. **HAL**: Implement and test unified API, mock adapter
+3. **Quantization**: Implement `quantize` CLI, ONNX validation, TensorRT path
+4. **Calibration data**: Prepare 100–500 representative images for INT8 quantization
+
+### 0.3 Later on Ubuntu
+
+1. Install SNPE SDK (Section 2.2.1)
+2. Run ONNX → DLC conversion and INT8 quantization
+3. Copy DLC to RB5 and validate SNPE adapter
+4. Write EDS / Modbus register maps for PLC integration
+
+---
+
 ## 1. P0: Unified Perception API Specification
 
 ### 1.1 Objective
@@ -129,16 +159,73 @@ auto result = api->Infer(image, "yolov8n_defect");
 
 | Item | Version / Requirement |
 |------|----------------------|
-| OS | Ubuntu 20.04 / Yocto |
-| SNPE SDK | 2.x (Qualcomm Developer) |
+| OS | Ubuntu 20.04 / 22.04 / Yocto (**SNPE does not support macOS**; Linux x86_64 / Windows only) |
+| SNPE SDK | 2.x (Qualcomm Neural Processing SDK) |
 | Python | 3.8+ |
 | Model format | DLC (convert via snpe-onnx-to-dlc) |
 
-**Steps**:
+**Environment notes**:
+- **macOS**: Model dev and ONNX export on Mac; SNPE quantization and inference require **Ubuntu** or **Docker (Ubuntu image)**
+- **RB5 inference**: Generate DLC on Ubuntu, then copy to RB5 and run with SNPE runtime
 
-1. Install SNPE runtime: `libSnpeDspRuntime.so`, `libSNPE.so`, etc.
-2. Install SNPE Python: `snpe-sdk/python`
-3. ONNX → DLC: `snpe-onnx-to-dlc` or `snpe-dlc-converter`
+**Download SNPE**:
+
+1. Go to [Qualcomm Neural Processing SDK](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk) (requires Qualcomm Developer account)
+2. Download the Linux x86_64 package for your Ubuntu version (e.g., `snpe-2.x.x.zip`)
+3. Unzip: `unzip snpe-*.zip -d ~/snpe`
+
+**Install on Ubuntu**:
+
+```bash
+# 1. Set SNPE root
+export SNPE_ROOT=~/snpe/snpe-2.x.x
+echo 'export SNPE_ROOT=~/snpe/snpe-2.x.x' >> ~/.bashrc
+
+# 2. Install dependencies (run from SNPE root)
+cd $SNPE_ROOT
+source bin/dependencies.sh
+source bin/check_python_depends.sh
+
+# 3. Add SNPE tools to PATH
+export PATH=$SNPE_ROOT/bin/x86_64-linux-clang:$PATH
+export LD_LIBRARY_PATH=$SNPE_ROOT/lib/x86_64-linux-clang:$LD_LIBRARY_PATH
+```
+
+**Python package** (optional, for Python inference):
+
+```bash
+cd $SNPE_ROOT
+pip install -r lib/python/requirements.txt
+pip install lib/python/wheels/snpe-*.whl  # e.g. snpe-2.15.0.230725-cp38-cp38-linux_x86_64.whl
+```
+
+**Docker option (macOS users)**:
+
+```bash
+# Run Ubuntu container, mount project, install SNPE inside
+docker run -it --rm -v $(pwd):/workspace ubuntu:20.04 bash
+# Inside container: apt update, install SNPE per steps above
+```
+
+**ONNX → DLC conversion**:
+
+```bash
+# FP32 DLC
+$SNPE_ROOT/bin/x86_64-linux-clang/snpe-onnx-to-dlc \
+  --input_network model.onnx \
+  --output model.dlc
+
+# INT8 quantization (after FP32 DLC)
+$SNPE_ROOT/bin/x86_64-linux-clang/snpe-dlc-quantize \
+  --input_dlc model.dlc \
+  --input_list calibration_images.txt \
+  --output_dlc model_int8.dlc
+```
+
+**Key files** (after install):
+- Runtime libs: `$SNPE_ROOT/lib/x86_64-linux-clang/` (`libSNPE.so`, `libSnpeDspRuntime.so`, etc.)
+- Converter: `$SNPE_ROOT/bin/x86_64-linux-clang/snpe-onnx-to-dlc`
+- Quantizer: `$SNPE_ROOT/bin/x86_64-linux-clang/snpe-dlc-quantize`
 
 #### 2.2.2 NVIDIA Jetson (TensorRT)
 
@@ -164,11 +251,54 @@ auto result = api->Infer(image, "yolov8n_defect");
 | Output | Bounding boxes + class + confidence |
 | Export | `model.export(format="onnx")` |
 
-**Export ONNX**:
+**Model variants**:
+
+| Variant | Params | Compute | Use case |
+|---------|--------|---------|----------|
+| YOLOv8n | 3.2M | Lowest | Edge, RB5, Jetson Nano |
+| YOLOv8s | 11.2M | Low | Balance accuracy/speed |
+| YOLOv8m | 25.9M | Medium | Higher accuracy |
+| YOLOv8l / x | 43.7M / 68.2M | High | Cloud or high-power edge |
+
+**Pretrained weights**: Default COCO 80 classes; auto-downloaded from Ultralytics (e.g., `yolov8n.pt`).
+
+**Export ONNX** (runs on Mac / Windows / Linux):
 
 ```bash
+# Basic export (imgsz defaults to 640)
 yolo export model=yolov8n.pt format=onnx imgsz=640
+
+# Recommended: fixed input, simplify, set opset
+yolo export model=yolov8n.pt format=onnx imgsz=640 dynamic=False simplify=True opset=12
+
+# Python
+from ultralytics import YOLO
+model = YOLO("yolov8n.pt")
+model.export(format="onnx", imgsz=640, opset=12, simplify=True, dynamic=False)
 ```
+
+**Export parameters**:
+
+| Param | Description | Recommendation |
+|-------|-------------|----------------|
+| `imgsz` | Input size (H, W) | 640 or (640, 640) |
+| `opset` | ONNX opset version | 12 (SNPE/TensorRT compatible) |
+| `dynamic` | Dynamic batch/shape | False (use fixed for edge) |
+| `simplify` | Simplify ONNX graph | True |
+| `half` | FP16 export | Optional |
+
+**Input preprocessing**:
+- Normalize: `/255.0` if not built into the model
+- Channel order: RGB or BGR (match training)
+- Letterbox: scale with aspect ratio, pad to target size
+
+**Output format** (YOLOv8 ONNX):
+- Shape: `(1, 84, 8400)` — 4 coords + 80 class scores, 8400 anchors
+- Postprocess: Decode to `[x_center, y_center, w, h]` + class + confidence, apply NMS
+
+**Custom training** (industrial use):
+- Fine-tune on your dataset: `model = YOLO("yolov8n.pt"); model.train(data="coco128.yaml", epochs=100)`
+- Use trained `runs/detect/train/weights/best.pt` instead of `yolov8n.pt` when exporting
 
 ### 2.4 Adapter Implementation
 
@@ -253,7 +383,8 @@ src/04_hal/
 
 #### Environment
 
-- PC: x86_64 Linux / Windows with SNPE SDK
+- PC: x86_64 **Linux / Windows** with SNPE SDK (SNPE does not support macOS)
+- macOS: Use Docker with Ubuntu image to run SNPE and convert ONNX → DLC in a container
 - Python scripts call `snpe-dlc-converter` or `snpe-onnx-to-dlc`
 
 #### Steps
@@ -364,10 +495,11 @@ src/03_orchestration/
 
 | Master doc section | This document |
 |--------------------|---------------|
+| - | Section 0: Dev environment & execution order (Mac first) |
 | 7.1 P0 Unified API | Section 1 |
 | 7.2 P0 SNPE/TensorRT adapters | Section 2 |
 | 7.3 P1 Quantization pipeline | Section 3 |
 
 ---
 
-*Document v1.0 · Companion to Configurable Industrial Camera Solution Technical Execution Checklist · For engineering leads and dev teams*
+*Document v1.1 · Companion to Configurable Industrial Camera Solution Technical Execution Checklist · For engineering leads and dev teams · Adds phased Mac-first, Ubuntu-later workflow*
