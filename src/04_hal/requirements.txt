@@ -1,0 +1,8 @@
+# HAL (Perception Adapter Layer) - optional deps
+# Core API works with stdlib only when using mock backend.
+
+numpy>=1.20.0
+# opencv-python  # Optional: for bytes→ndarray decode in infer()
+
+# Dev
+pytest>=7.0.0
