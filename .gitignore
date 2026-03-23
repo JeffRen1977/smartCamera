@@ -10,6 +10,9 @@
 *.jpeg
 *.png
 
+# SNPE SDK (downloaded separately)
+snpe_quant_workspace/snpe/
+
 # Python
 __pycache__/
 *.py[cod]

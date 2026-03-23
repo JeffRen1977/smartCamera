@@ -408,6 +408,138 @@ src/04_hal/
 - `calibration_images.txt`: one path per line
 - Image size must match inference (e.g. 640×640)
 
+#### Running SNPE Quantization in Docker (Step-by-Step)
+
+**When to use**: macOS or no Ubuntu; run SNPE quantization inside Docker.
+
+**Prerequisites**:
+- Docker installed on host
+- ONNX model ready (e.g. `yolov8n.onnx`)
+- Calibration images (100–500, 640×640)
+
+---
+
+**Step 1: Prepare workspace**
+
+```bash
+mkdir -p snpe_quant_workspace
+cd snpe_quant_workspace
+# Layout: model.onnx, calib/*.jpg, calibration_images.txt, output/
+```
+
+---
+
+**Step 2: Download SNPE SDK**
+
+Download Linux x86_64 SNPE from Qualcomm Developer, unzip to `snpe_quant_workspace/snpe/`:
+
+```bash
+unzip snpe-*.zip -d snpe_quant_workspace/snpe/
+# e.g. snpe_quant_workspace/snpe/snpe-2.15.0/
+```
+
+---
+
+**Step 3: Generate calibration_images.txt**
+
+```bash
+cd snpe_quant_workspace
+ls calib/*.jpg | head -200 > calibration_images.txt
+```
+
+---
+
+**Step 4: Start Ubuntu container with workspace mounted**
+
+```bash
+docker run -it --rm \
+  -v $(pwd)/snpe_quant_workspace:/workspace \
+  ubuntu:20.04 bash
+```
+
+---
+
+**Step 5: Install deps and SNPE inside container**
+
+```bash
+apt-get update
+apt-get install -y wget unzip python3 python3-pip
+
+export SNPE_ROOT=/workspace/snpe/snpe-2.15.0
+export PATH=$SNPE_ROOT/bin/x86_64-linux-clang:$PATH
+export LD_LIBRARY_PATH=$SNPE_ROOT/lib/x86_64-linux-clang:$LD_LIBRARY_PATH
+
+cd $SNPE_ROOT && source bin/dependencies.sh 2>/dev/null || true
+```
+
+---
+
+**Step 6: ONNX → DLC (FP32)**
+
+```bash
+cd /workspace
+$SNPE_ROOT/bin/x86_64-linux-clang/snpe-onnx-to-dlc \
+  --input_network model.onnx \
+  --output model.dlc
+ls -la model.dlc
+```
+
+---
+
+**Step 7: INT8 quantization (optional)**
+
+```bash
+cd /workspace
+# Use absolute paths in container, e.g. /workspace/calib/img001.jpg
+$SNPE_ROOT/bin/x86_64-linux-clang/snpe-dlc-quantize \
+  --input_dlc model.dlc \
+  --input_list calibration_images.txt \
+  --output_dlc model_int8.dlc
+```
+
+---
+
+**Step 8: Get outputs on host**
+
+Outputs are in the mounted dir: `snpe_quant_workspace/model.dlc`, `model_int8.dlc`.
+
+---
+
+**One-liner script (host)**
+
+```bash
+#!/bin/bash
+WORKSPACE="$(pwd)/snpe_quant_workspace"
+ONNX="yolov8n.onnx"
+CALIB_LIST="calibration_images.txt"
+
+docker run --rm \
+  -v "$WORKSPACE:/workspace" \
+  ubuntu:20.04 bash -c "
+    export SNPE_ROOT=/workspace/snpe/snpe-2.15.0
+    export PATH=\$SNPE_ROOT/bin/x86_64-linux-clang:\$PATH
+    cd /workspace
+    \$SNPE_ROOT/bin/x86_64-linux-clang/snpe-onnx-to-dlc \
+      --input_network $ONNX --output ${ONNX%.onnx}.dlc
+    [ -f $CALIB_LIST ] && \$SNPE_ROOT/bin/x86_64-linux-clang/snpe-dlc-quantize \
+      --input_dlc ${ONNX%.onnx}.dlc \
+      --input_list $CALIB_LIST \
+      --output_dlc ${ONNX%.onnx}_int8.dlc || true
+  "
+echo "Done. Check $WORKSPACE/*.dlc"
+```
+
+---
+
+**Troubleshooting**
+
+| Issue | Fix |
+|-------|-----|
+| `snpe-onnx-to-dlc: not found` | Check `SNPE_ROOT` and `PATH` |
+| Calibration path error | Use absolute paths `/workspace/calib/xxx.jpg` |
+| OOM | Add `--memory=4g` to `docker run` |
+| ONNX opset | Export with `opset=12` (see §2.3) |
+
 ### 3.4 TensorRT Quantization
 
 #### Environment

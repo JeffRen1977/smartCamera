@@ -1,0 +1,5 @@
+# 校准图像路径（每行一个）
+# 放入 calib/ 后，运行: ls calib/*.jpg | head -200 > calibration_images.txt
+# Docker 容器内请使用绝对路径: /workspace/calib/img001.jpg
+calib/img001.jpg
+calib/img002.jpg
